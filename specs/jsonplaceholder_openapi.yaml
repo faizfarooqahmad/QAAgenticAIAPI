@@ -1,0 +1,390 @@
+openapi: "3.0.3"
+info:
+  title: JSONPlaceholder API
+  description: >
+    Free fake REST API for testing and prototyping.
+    Data is not persisted — POST/PUT/DELETE operations are simulated.
+  version: "1.0.0"
+  contact:
+    name: JSONPlaceholder
+    url: https://jsonplaceholder.typicode.com
+
+servers:
+  - url: https://jsonplaceholder.typicode.com
+    description: Production
+
+paths:
+  # ---------------------------------------------------------------------------
+  # Users
+  # ---------------------------------------------------------------------------
+  /users:
+    get:
+      operationId: list_users
+      summary: List all users
+      description: Returns all 10 users with full profile information.
+      tags: [Users]
+      responses:
+        "200":
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /users/{user_id}:
+    get:
+      operationId: get_user
+      summary: Get a user by ID
+      description: Returns a single user by their numeric ID (1–10).
+      tags: [Users]
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: A single user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: User not found
+
+  # ---------------------------------------------------------------------------
+  # Posts
+  # ---------------------------------------------------------------------------
+  /posts:
+    get:
+      operationId: list_posts
+      summary: List posts
+      description: Returns all posts. Optionally filter by userId query parameter.
+      tags: [Posts]
+      parameters:
+        - name: userId
+          in: query
+          required: false
+          description: Filter posts by author user ID
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: A list of posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+
+    post:
+      operationId: create_post
+      summary: Create a new post
+      description: >
+        Creates a new post (simulated). The server returns the created object
+        with an auto-assigned ID but does not actually persist it.
+      tags: [Posts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostCreate"
+      responses:
+        "201":
+          description: The created post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+
+  /posts/{post_id}:
+    get:
+      operationId: get_post
+      summary: Get a post by ID
+      description: Returns a single post by its numeric ID.
+      tags: [Posts]
+      parameters:
+        - $ref: "#/components/parameters/PostId"
+      responses:
+        "200":
+          description: A single post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+        "404":
+          description: Post not found
+
+    put:
+      operationId: update_post
+      summary: Update a post
+      description: >
+        Replaces an existing post (simulated). Send the full updated object.
+      tags: [Posts]
+      parameters:
+        - $ref: "#/components/parameters/PostId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostUpdate"
+      responses:
+        "200":
+          description: The updated post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+        "404":
+          description: Post not found
+
+    delete:
+      operationId: delete_post
+      summary: Delete a post
+      description: Deletes a post by ID (simulated — returns empty object).
+      tags: [Posts]
+      parameters:
+        - $ref: "#/components/parameters/PostId"
+      responses:
+        "200":
+          description: Empty response confirming deletion
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ---------------------------------------------------------------------------
+  # Comments
+  # ---------------------------------------------------------------------------
+  /posts/{post_id}/comments:
+    get:
+      operationId: get_comments
+      summary: Get comments for a post
+      description: Returns all comments associated with the given post ID.
+      tags: [Comments]
+      parameters:
+        - $ref: "#/components/parameters/PostId"
+      responses:
+        "200":
+          description: A list of comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Comment"
+
+  # ---------------------------------------------------------------------------
+  # Todos
+  # ---------------------------------------------------------------------------
+  /todos:
+    get:
+      operationId: list_todos
+      summary: List todos
+      description: Returns all todos. Optionally filter by userId query parameter.
+      tags: [Todos]
+      parameters:
+        - name: userId
+          in: query
+          required: false
+          description: Filter todos by user ID
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: A list of todos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Todo"
+
+# =============================================================================
+# Components
+# =============================================================================
+components:
+
+  # ---------------------------------------------------------------------------
+  # Reusable parameters
+  # ---------------------------------------------------------------------------
+  parameters:
+    UserId:
+      name: user_id
+      in: path
+      required: true
+      description: Numeric ID of the user (1–10)
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 10
+
+    PostId:
+      name: post_id
+      in: path
+      required: true
+      description: Numeric ID of the post
+      schema:
+        type: integer
+        minimum: 1
+
+  # ---------------------------------------------------------------------------
+  # Schemas
+  # ---------------------------------------------------------------------------
+  schemas:
+    Geo:
+      type: object
+      properties:
+        lat:
+          type: string
+          example: "-37.3159"
+        lng:
+          type: string
+          example: "81.1496"
+
+    Address:
+      type: object
+      properties:
+        street:
+          type: string
+          example: "Kulas Light"
+        suite:
+          type: string
+          example: "Apt. 556"
+        city:
+          type: string
+          example: "Gwenborough"
+        zipcode:
+          type: string
+          example: "92998-3874"
+        geo:
+          $ref: "#/components/schemas/Geo"
+
+    Company:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Romaguera-Crona"
+        catchPhrase:
+          type: string
+          example: "Multi-layered client-server neural-net"
+        bs:
+          type: string
+          example: "harness real-time e-markets"
+
+    User:
+      type: object
+      required: [id, name, username, email]
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Leanne Graham"
+        username:
+          type: string
+          example: "Bret"
+        email:
+          type: string
+          format: email
+          example: "Sincere@april.biz"
+        phone:
+          type: string
+          example: "1-770-736-8031 x56442"
+        website:
+          type: string
+          example: "hildegard.org"
+        address:
+          $ref: "#/components/schemas/Address"
+        company:
+          $ref: "#/components/schemas/Company"
+
+    Post:
+      type: object
+      required: [id, userId, title, body]
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "sunt aut facere repellat provident"
+        body:
+          type: string
+          example: "quia et suscipit..."
+
+    PostCreate:
+      type: object
+      required: [title, body]
+      properties:
+        title:
+          type: string
+          description: Title of the new post
+          example: "My New Post"
+        body:
+          type: string
+          description: Body content of the new post
+          example: "This is the post content."
+        userId:
+          type: integer
+          description: Author user ID
+          default: 1
+          example: 1
+
+    PostUpdate:
+      type: object
+      required: [title, body]
+      properties:
+        title:
+          type: string
+          description: Updated title
+          example: "Updated Post Title"
+        body:
+          type: string
+          description: Updated body content
+          example: "This is the updated content."
+
+    Comment:
+      type: object
+      required: [id, postId, name, email, body]
+      properties:
+        id:
+          type: integer
+          example: 1
+        postId:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "id labore ex et quam laborum"
+        email:
+          type: string
+          format: email
+          example: "Eliseo@gardner.biz"
+        body:
+          type: string
+          example: "laudantium enim quasi est quidem..."
+
+    Todo:
+      type: object
+      required: [id, userId, title, completed]
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "delectus aut autem"
+        completed:
+          type: boolean
+          example: false

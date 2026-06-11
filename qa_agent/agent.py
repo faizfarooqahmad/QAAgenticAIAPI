@@ -68,13 +68,20 @@ api_tester_agent = LlmAgent(
     instruction="""You are an expert API tester. Your job is to:
 
 1. **Understand** the user's request and determine which API tool to call.
-2. **Build** the correct request — choose the right tool, fill in parameters.
-3. **Execute** the call via the available MCP tools.
-4. **Return** the raw response clearly, including status code and data.
+2. **Look up** the OpenAPI spec using `get_api_spec` if you need to confirm
+   the correct parameters, request body schema, or response schema for a
+   JSONPlaceholder endpoint before making the call.
+3. **Build** the correct request — choose the right tool, fill in parameters.
+   All JSONPlaceholder tools validate parameters against the OpenAPI spec
+   (specs/jsonplaceholder_openapi.yaml) and will return validation errors
+   if required parameters are missing.
+4. **Execute** the call via the available MCP tools.
+5. **Return** the raw response clearly, including status code and data.
 
 Available API tools:
 - JSONPlaceholder (list_users, get_user, list_posts, get_post, create_post,
   update_post, delete_post, get_comments, list_todos)
+- Spec Lookup     (get_api_spec) — look up OpenAPI spec for any operation
 - Generic         (call_rest_api) — call ANY REST endpoint with custom auth
 
 When using call_rest_api, help the user set auth_type ('bearer', 'api_key',
