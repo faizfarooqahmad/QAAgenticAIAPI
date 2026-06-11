@@ -24,19 +24,18 @@ An **Agentic AI** project built with **Google ADK** (Agent Development Kit) and 
 ┌─────────▼──────────────────────────────────────┐
 │          MCP Server (api_tools_server)          │
 │                                                │
-│  JSONPlaceholder  │  OpenWeatherMap  │  GitHub  │
-│  (No Auth)        │  (API Key)       │ (OAuth)  │
-│                                                │
-│         + Generic REST API Caller              │
+│  JSONPlaceholder (No Auth, CRUD)               │
+│  + Generic REST API Caller (Any Auth)          │
 └────────────────────────────────────────────────┘
 ```
 
 ## Features
 
 - **Natural language API testing** — Ask in plain English, the agent builds and executes the request
-- **Multi-API support** — JSONPlaceholder (CRUD), OpenWeatherMap (weather), GitHub (repos/issues)
-- **Authentication** — API Key, Bearer/OAuth Token, and Basic Auth support
+- **JSONPlaceholder CRUD** — Full Create, Read, Update, Delete operations on users, posts, comments, todos
 - **Generic REST caller** — Test *any* REST endpoint via the `call_rest_api` tool
+- **Authentication** — API Key, Bearer/OAuth Token, and Basic Auth support
+- **Request/Response logging** — All API calls logged to `logs/api_calls.log`
 - **Response analysis** — Validate schemas, compare responses, get QA summaries
 - **Multiple interfaces** — CLI, Web Chat UI, ADK Web, or REST API
 
@@ -55,10 +54,8 @@ pip install -r requirements.txt
 
 ```bash
 cp .env.example .env
-# Edit .env and add your keys:
-#   GOOGLE_API_KEY          — Required (Gemini API)
-#   OPENWEATHERMAP_API_KEY  — Optional (weather tools)
-#   GITHUB_TOKEN            — Optional (higher GitHub rate limits)
+# Edit .env and add your key:
+#   GOOGLE_API_KEY — Required (Gemini API)
 ```
 
 Get your **Google API Key** at: https://aistudio.google.com/apikey
@@ -86,17 +83,157 @@ adk web qa_agent
 python main.py --once "List all users from JSONPlaceholder"
 ```
 
-## Example Prompts
+## Sample Prompts
 
-| Prompt | What Happens |
-|--------|-------------|
-| *"List all users from JSONPlaceholder"* | Calls `list_users` → returns 10 users |
-| *"Get posts by user 3"* | Calls `list_posts(user_id=3)` |
-| *"Create a post titled 'Bug Report' with body 'Login fails'"* | Calls `create_post(...)` |
-| *"What's the weather in London?"* | Calls `get_weather(city='London')` with API key auth |
-| *"Search GitHub for Python testing frameworks"* | Calls `search_github_repos(...)` with token auth |
-| *"GET https://api.example.com/health with Bearer token xyz"* | Calls `call_rest_api(...)` with bearer auth |
-| *"Analyse the last response — are there any missing fields?"* | Routes to `response_analyzer` agent |
+### JSONPlaceholder API
+
+#### list_users
+```
+List all users from JSONPlaceholder
+```
+```
+Show me all the users available in the system
+```
+
+#### get_user
+```
+Get user with ID 3
+```
+```
+Fetch details of user number 5 from JSONPlaceholder
+```
+
+#### list_posts
+```
+List all posts from JSONPlaceholder
+```
+```
+Show me all posts written by user 2
+```
+
+#### get_post
+```
+Get post number 7
+```
+```
+Fetch the post with ID 15 from JSONPlaceholder
+```
+
+#### create_post
+```
+Create a new post with title "Login Bug" and body "Login page returns 500 error on submit"
+```
+```
+Create a post titled "Test Results" with body "All regression tests passed" for user 3
+```
+
+#### update_post
+```
+Update post 1 with new title "Updated Title" and body "This is the corrected content"
+```
+```
+Change post 5 title to "Fixed Issue" and body to "The bug has been resolved"
+```
+
+#### delete_post
+```
+Delete post number 10
+```
+```
+Remove post with ID 3 from JSONPlaceholder
+```
+
+#### get_comments
+```
+Get all comments on post 1
+```
+```
+Show me the comments for post number 12
+```
+
+#### list_todos
+```
+List all todos from JSONPlaceholder
+```
+```
+Show me todos for user 5
+```
+
+---
+
+### Generic REST API Caller
+
+#### GET request (no auth)
+```
+Call GET on https://httpbin.org/get
+```
+```
+Make a GET request to https://jsonplaceholder.typicode.com/albums
+```
+
+#### GET request with query parameters
+```
+Call GET on https://httpbin.org/get with query params {"page": "1", "limit": "10"}
+```
+
+#### POST request with JSON body
+```
+Call POST on https://httpbin.org/post with body {"username": "testuser", "email": "test@example.com"}
+```
+```
+Make a POST request to https://reqres.in/api/users with body {"name": "John", "job": "QA Engineer"}
+```
+
+#### PUT request
+```
+Call PUT on https://reqres.in/api/users/2 with body {"name": "Jane", "job": "Senior QA"}
+```
+
+#### PATCH request
+```
+Call PATCH on https://reqres.in/api/users/2 with body {"job": "Lead QA"}
+```
+
+#### DELETE request
+```
+Call DELETE on https://reqres.in/api/users/2
+```
+
+#### With Bearer Token (OAuth) authentication
+```
+Call GET on https://api.example.com/users with bearer token "eyJhbGciOiJIUzI1NiIsInR5..."
+```
+```
+Make a POST to https://api.example.com/orders with bearer auth token "my-oauth-token" and body {"item": "widget", "qty": 5}
+```
+
+#### With API Key authentication
+```
+Call GET on https://api.example.com/data with API key "abc123xyz"
+```
+
+#### With Basic Auth
+```
+Call GET on https://httpbin.org/basic-auth/user/pass with basic auth "dXNlcjpwYXNz"
+```
+
+#### With custom headers
+```
+Call GET on https://httpbin.org/headers with headers {"X-Custom-Header": "QA-Test", "Accept": "application/json"}
+```
+
+---
+
+### Response Analysis
+```
+Analyse the last response — are there any missing fields?
+```
+```
+Compare the response of get user 1 and get user 2 — what are the differences?
+```
+```
+Validate the response schema — does every user have an email and phone field?
+```
 
 ## Project Structure
 
@@ -131,33 +268,27 @@ QAAgenticAIAPI/
 | `get_comments` | GET comments for a post |
 | `list_todos` | GET todos (optionally by user) |
 
-### OpenWeatherMap (API Key Auth)
-| Tool | Description |
-|------|-------------|
-| `get_weather` | Current weather for a city |
-| `get_weather_forecast` | 5-day forecast for a city |
-
-### GitHub (Bearer Token Auth)
-| Tool | Description |
-|------|-------------|
-| `search_github_repos` | Search repositories |
-| `get_github_repo` | Get repo details |
-| `list_github_issues` | List issues for a repo |
-
-### Generic
+### Generic REST API Caller
 | Tool | Description |
 |------|-------------|
 | `call_rest_api` | Call any REST endpoint with custom method, headers, params, body, and auth |
 
 ## Authentication
 
-The agent supports three authentication methods:
+The generic `call_rest_api` tool supports three authentication methods:
 
-1. **API Key** — Passed as query parameter (e.g., OpenWeatherMap)
-2. **Bearer / OAuth Token** — Passed in `Authorization: Bearer <token>` header (e.g., GitHub)
-3. **Basic Auth** — Base64-encoded `user:password` in `Authorization: Basic <value>` header
+1. **API Key** (`auth_type='api_key'`) — Adds `?api_key=<value>` as query parameter
+2. **Bearer / OAuth Token** (`auth_type='bearer'`) — Adds `Authorization: Bearer <value>` header
+3. **Basic Auth** (`auth_type='basic'`) — Adds `Authorization: Basic <value>` header (Base64-encoded `user:password`)
 
-For the generic `call_rest_api` tool, set `auth_type` and `auth_value` accordingly.
+## Logging
+
+All API requests and responses are automatically logged to `logs/api_calls.log` in JSON format:
+
+```json
+{"timestamp": "2026-06-11T03:40:00+00:00", "direction": "REQUEST", "tool": "get_user", "method": "GET", "url": "https://jsonplaceholder.typicode.com/users/1", "query_params": {"user_id": 1}}
+{"timestamp": "2026-06-11T03:40:01+00:00", "direction": "RESPONSE", "tool": "get_user", "status_code": 200, "body": {"id": 1, "name": "Leanne Graham", ...}}
+```
 
 ## Tech Stack
 
